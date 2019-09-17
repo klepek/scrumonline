@@ -18,6 +18,8 @@ class SessionController extends ControllerBase
       $tokenKey = $this->tokenKey($session["id"]);
       $session["requiresPassword"] = $session["isPrivate"] 
         && (!isset($_COOKIE[$tokenKey]) || $_COOKIE[$tokenKey] !== $session["token"]);
+      // Remove token from the response again
+      unset($session["token"]);
     }
 
     return $sessions;
@@ -39,7 +41,7 @@ class SessionController extends ControllerBase
     if ($private)
       $token = $this->createHash($data["name"], $data["password"]);
     else
-      $token = $this->createHash($data["name"], bin2hex(random_bytes(8)));   
+      $token = $this->createHash($data["name"], $this->randomKey());   
     $session->setToken($token);
       
     $session->setLastAction(new DateTime());
@@ -49,6 +51,16 @@ class SessionController extends ControllerBase
     $this->setCookie($session);
     
     return new NumericResponse($session->getId());
+  }
+
+  // Generate a random key for the public session token
+  private function randomKey()
+  {
+    if (PHP_MAJOR_VERSION >= 7)
+      $bytes = random_bytes(8);
+    else
+      $bytes = openssl_random_pseudo_bytes(8);
+    return bin2hex($bytes);
   }
 
   // Add or remove member
@@ -173,7 +185,12 @@ class SessionController extends ControllerBase
   // URL: /api/session/membercheck/{id}/{mid}
   public function membercheck($sid, $mid)
   {
-    $session = $this->getSession($sid);
+    try{
+      $session = $this->getSession($sid);
+    }
+    catch(Exception $e){
+      return new BoolResponse();
+    }
     foreach($session->getMembers() as $member) {
       if($member->getId() == $mid) {
         return new BoolResponse(true);
@@ -210,6 +227,27 @@ class SessionController extends ControllerBase
   public function cardsets()
   {
     return $this->cardSets;
+  }
+
+  // Wipe all data from the session
+  // URL: /api/session/wipe/{id}
+  public function wipe($id)
+  {
+    // Fetch session and verify token
+    $session = $this->getSession($id);
+    if (!$this->verifyToken($session))
+      return;
+    // Clear and wipe polls
+    $session->setCurrentPoll(null);
+    foreach($session->getPolls() as $poll)
+      $this->entityManager->remove($poll);
+    // Wipe all members
+    foreach($session->getMembers() as $member)
+      $this->entityManager->remove($member);
+    $this->entityManager->flush();
+    // Remove session object
+    $this->entityManager->remove($session);
+    $this->entityManager->flush();
   }
 
   // Set the token cookie for this session 

@@ -11,9 +11,6 @@ $conn = array(
 // This is used to create the join link
 $host = "https://scrumonline.local";
 
-// Google analytics id
-$ga = 'GOOGLE-ANALYTICS';
-  
 $cardSets = [
     // Standard fibonaci like series of values
     ['1', '2', '3', '5', '8', '13', '20', '40', '100'],
@@ -32,7 +29,9 @@ $cardSets = [
     // Fibonaci series including 0.5
     ['0.5', '1', '2', '3', '5', '8', '13', '20', '40', '100'],
     // Canadian Cash format
-    ['1', '2', '5', '10', '20', '50', '100']
+    ['1', '2', '5', '10', '20', '50', '100'],
+    // Standard fibonacci with shrug
+   ['1', '2', '3', '5', '8', '13', '&#F937;']
 ];
 
 // Src tree for documentation linking from page
@@ -43,7 +42,9 @@ $plugins = [
     // Plugin to load issues from github
     'GitHub',
     // Plugin to load issues from JIRA
-    'JIRA'
+    'JIRA',
+    // Plugin to load issues from Gitlab
+    'Gitlab'
 ];
 
 // Configuration for the server side JIRA controller

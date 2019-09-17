@@ -1,5 +1,5 @@
 /*eslint-env browser, jquery*/
-/*globals angular ga_id*/
+/*globals angular*/
 
 var scrum = {  
   // Ticketing sources
@@ -10,7 +10,6 @@ var scrum = {
       feedback: false,
       topic: '',
       description: '',
-      event: ['poll', 'start', 'Default'],
       view: 'default_source.html'
     },
     { 
@@ -55,13 +54,13 @@ var scrum = {
 };
 
 // Define angular app
-scrum.app = angular.module('scrum-online', ['ngRoute', 'ngSanitize', 'ngCookies', 'angular-google-analytics']);
+scrum.app = angular.module('scrum-online', ['ngRoute', 'ngSanitize', 'ngCookies']);
 
 //------------------------------
 // Configure routing
 // -----------------------------
 scrum.app.config(
-  function($locationProvider, $routeProvider, AnalyticsProvider) {
+  function($locationProvider, $routeProvider) {
     // Use HTML5 mode for prettier routes
     $locationProvider.html5Mode(true);
 
@@ -78,41 +77,27 @@ scrum.app.config(
       .when('/session/:id',{
       	templateUrl : 'master.html',
       	controller: 'MasterController',
-        controllerAs: 'master',
-      	pageTrack: '/session'
+        controllerAs: 'master'
       })
       .when('/join', { redirectTo: '/join/0' })
       .when('/join/:id', {
       	templateUrl : 'join.html',
       	controller: 'JoinController',
-        controllerAs: 'join',
-      	pageTrack: '/join'
+        controllerAs: 'join'
       })
       .when('/member/:sessionId/:memberId', {
       	templateUrl : 'member.html',
       	controller: 'MemberController',
-        controllerAs: 'member',
-      	pageTrack: '/member'
-      })
-      .when('/impressum', {
-        templateUrl: 'impressum.html',        
+        controllerAs: 'member'
       })
       .when('/removal', {
         templateUrl: 'removal.html',        
       })
       .otherwise({
-      	templateUrl: '404.html',
-      	dontTrack: true
+      	templateUrl: '404.html'
       })
     ;
-    
-  // Set analytics id and remove ids from routes
-  AnalyticsProvider.setAccount(ga_id)
-  		   .readFromRoute(true)
-  		   .ignoreFirstPageLoad(true);
 });
-// Run once to activate tracking
-scrum.app.run(function(Analytics) {});
 
 //------------------------------
 // Create controller
@@ -355,6 +340,17 @@ scrum.app.controller('MasterController', function ($http, $routeParams, $locatio
   this.remove = function (id) {
     $http.delete("/api/session/member/" + self.id + "/" + id);  
   };
+
+  // Wipe the session and redirect
+  this.wipe = function () {
+    var confirmed = confirm("Do you want to delete the session and wipe all associated data?");
+    if (!confirmed)
+      return;
+      
+    $http.delete('/api/session/wipe/' + self.id).then(function (response){
+      $location.url("/404.html"); // Redirect to 404 when we wiped the session
+    });
+  }
   
   // Select a ticketing system
   this.selectSource = function(source) {
@@ -416,8 +412,11 @@ scrum.app.controller('MasterController', function ($http, $routeParams, $locatio
       self.consensus = result.consensus;
 
       // If the result has a topic, the team has started estimating
-      if(result.topic !== '')
+      if(result.topic !== '') {
+        self.current.topic = result.topic;
+        self.current.description = result.description;
         self.teamComplete = true;
+      }        
       
       // Forward result to ticketing system
       if (self.current.feedback && self.flipped && self.consensus) {

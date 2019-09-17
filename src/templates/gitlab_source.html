@@ -4,27 +4,27 @@
     <div class="row">
       <div class="col-xs-12 col-md-6">
         <div class="form-group">
-          <label>Repo:</label>
-          <input type="text" class="form-control" placeholder="Toxantron/scrumonline" ng-model="master.current.repo">
+          <label>Server:</label>
+          <input type="text" class="form-control" placeholder="{{master.current.server}}" ng-model="master.current.server">
         </div>
-      </div>      
+      </div>
+      <div class="col-xs-12 col-md-6">
+        <div class="form-group">
+          <label>Repo:</label>
+          <input type="text" class="form-control" placeholder="user/repo" ng-model="master.current.repo">
+        </div>
+      </div>
+    </div>  
+    <div class="row">
       <div class="col-xs-12 col-md-6">
         <div class="form-group">
           <label><input type="checkbox" ng-model="master.current.isPrivate"> is private</label> 
         </div>
       </div>
-    </div>  
-    <div class="row" ng-if="master.current.isPrivate">
-      <div class="col-xs-12 col-md-6">
+      <div class="col-xs-12 col-md-6" ng-if="master.current.isPrivate">
         <div class="form-group">
-          <label>User:</label>
-          <input type="text" class="form-control" ng-model="master.current.user">
-        </div>
-      </div>
-      <div class="col-xs-12 col-md-6">
-        <div class="form-group">
-          <label>Password:</label>
-          <input type="password" class="form-control" ng-model="master.current.password">
+          <label>Token: <a target="_blank" href="https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html">?</a></label>
+          <input type="text" class="form-control" ng-model="master.current.token">
         </div>
       </div>
     </div>
@@ -38,17 +38,17 @@
     <div class="col-xs-4">
         <div class="list-group issue-list">
           <a  ng-repeat="issue in master.current.issues track by issue.id" class="selectable list-group-item" ng-class="{active: master.current.issue == issue}" ng-click="master.current.issue = issue">
-            #{{ issue.number }}: {{ issue.title }}
+            #{{ issue.iid }}: {{ issue.title }}
           </a>
         </div>
       </div>
       <div class="col-xs-8">
         <div class="row">
           <div class="col-xs-1">
-            <img src="{{ master.current.issue.user.avatar_url }}&s=50" alt="{{ master.current.issue.user.login }}" />
+            <img src="{{ master.current.issue.author.avatar_url }}" alt="{{ master.current.issue.author.name }}" style="width: 100%" />
           </div>
           <div class="col-xs-11">
-            <h2><a href="{{ master.current.issue.html_url }}" target="_blank">#{{ master.current.issue.number }}</a>: {{ master.current.issue.title }}</h2>
+            <h2><a href="{{ master.current.issue.web_url }}" target="_blank">#{{ master.current.issue.iid }}</a>: {{ master.current.issue.title }}</h2>
           </div>
         </div>
         <div ng-if="master.current.issue.labels.length > 0">
@@ -57,12 +57,12 @@
 
         <div class="panel panel-default">
           <div class="panel-heading">
-            {{ master.current.issue.user.login }} created issue on {{ master.current.issue.created_at | date : "medium" }}
+            {{ master.current.issue.author.name }} created issue on {{ master.current.issue.created_at | date : "medium" }}
           </div>
-          <div class="panel-body" style="white-space: pre-line" ng-bind-html="master.current.issue.body"></div>
+          <div class="panel-body" style="white-space: pre-line" ng-bind-html="master.current.issue.description"></div>
         </div>
         
-        <button class="btn btn-default" ng-click="master.startPoll(master.current.issue.title, master.current.issue.body, master.current.issue.html_url">Start</button>
+        <button class="btn btn-default" ng-click="master.startPoll(master.current.issue.title, master.current.issue.description, master.current.issue.web_url)">Start</button>
       </div>
   </div>
 </div>

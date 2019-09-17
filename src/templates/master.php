@@ -4,7 +4,10 @@ include __DIR__ . "/../config.php";
 ?>
 <!-- Headline -->
 <div class="row">
-  <div class="col-sm-10 col-md-11">
+  <div class="col-xs-12 col-sm-1">
+    <button class="btn btn-lg btn-danger wipe" ng-click="master.wipe()">Wipe</button>
+  </div>
+  <div class="col-xs-10 col-sm-8 col-md-10">
     <h1>{{ master.id }} - {{ master.name }}</h1>
   </div>
   <div class="hidden-xs col-sm-2 col-md-1">
@@ -28,7 +31,7 @@ include __DIR__ . "/../config.php";
 <!-- Live poll view and statistics -->
 <div class="row" ng-if="master.teamComplete">
   <div class="card-overview">
-    <div ng-repeat="vote in master.votes track by vote.id" class="col-lg-2 col-sm-3 col-xs-4">        
+    <div ng-repeat="vote in master.votes track by vote.id">        
       <div class="card-container">
         <div class="deletable-card">
           <div class="card-flip" ng-class="{flipped: master.flipped}">
@@ -51,7 +54,7 @@ include __DIR__ . "/../config.php";
             
 <!-- Invite and statistics -->            
 <div class="row">
-  <div class="col-xs-12 col-md-5">
+  <div class="hidden-xs hidden-sm col-md-5">
     <h2>Invite members</h2>
     <p>Invite members to join your session. Session id: <strong ng-bind="master.id"></strong></p>
 <?php
@@ -67,7 +70,7 @@ $joinUrl = $joinUrl . "{{ master.joinFragment }}";
   <!-- Team list and complete button -->
   <div class="col-xs-12 col-md-5" ng-if="!master.teamComplete">
     <h2>Team</h2>
-    <il class="list-group">
+    <ul class="list-group">
       <!-- Iterate over votes as they represent members as well -->
       <li class="list-group-item" ng-repeat="member in master.votes track by member.id">{{$index + 1}}. {{member.name}}</li>
     </ul>
